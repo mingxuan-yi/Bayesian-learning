@@ -1,0 +1,6 @@
+model_checkpoint_path: "mnist.ckpt-1999"
+all_model_checkpoint_paths: "mnist.ckpt-1600"
+all_model_checkpoint_paths: "mnist.ckpt-1700"
+all_model_checkpoint_paths: "mnist.ckpt-1800"
+all_model_checkpoint_paths: "mnist.ckpt-1900"
+all_model_checkpoint_paths: "mnist.ckpt-1999"
