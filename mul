@@ -1,0 +1,106 @@
+{
+ "cells": [
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "The previous $\\sum_i{x_i}log(p_i)$ &ensp;&ensp;&ensp;        (1)\n",
+    "\n",
+    "Probs $p_i = \\frac{exp(y_i)}{\\sum_i{exp(y_i)}}$ &ensp;&ensp;&ensp;      (2)&ensp;   where $y_i$s are logits\n",
+    "\n",
+    "Computing eq(1) is unstable because of $log(p_i)$ might become $log(0)$. The same reason tf.nn.softmax_cross_entropy_with_logits() uses logits other than probs.\n",
+    "\n",
+    "Substitute $p_i$ by eq(2), eq(1) becomes $\\sum_i\\{{x_i}y_i-log\\sum_i{exp(y_i)}\\}$\n",
+    "\n",
+    "There are some algorithms which can compute the logsumexp term to avoid overflow issues. That function integrated in TensorFlow is a very stable implementation."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 1,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "('The previous one', -7.9593754)\n",
+      "('Minus Cross entropy', -7.9593763)\n",
+      "('The current one', -7.9593763)\n",
+      "\n",
+      "('The previous one', nan)\n",
+      "('Minus Cross entropy', -3004.1587)\n",
+      "('The current one', -3004.1587)\n"
+     ]
+    }
+   ],
+   "source": [
+    "from tensorflow.python.ops import math_ops\n",
+    "import tensorflow as tf\n",
+    "\n",
+    "with tf.Session() as sess:\n",
+    "    counts = [1., 2., 3.]\n",
+    "    logits = [-1., 2., 3.]\n",
+    "    probs = tf.exp(logits) / tf.reduce_sum(tf.exp(logits))\n",
+    "    \n",
+    "    # The previous one\n",
+    "    print('The previous one', sess.run(math_ops.reduce_sum(counts * math_ops.log(probs), -1)))\n",
+    "    \n",
+    "    # Minus cross entropy\n",
+    "    print('Minus Cross entropy', sess.run(-tf.nn.softmax_cross_entropy_with_logits(labels=counts, logits=logits)))\n",
+    "    \n",
+    "    # The current one\n",
+    "    logsumexp = math_ops.reduce_logsumexp(logits, -1, keep_dims=True)\n",
+    "    print('The current one',sess.run(math_ops.reduce_sum(counts * (logits - logsumexp), -1)))\n",
+    "\n",
+    "    print\n",
+    "    # Let some of probs be close to zero\n",
+    "    counts = [1., 2., 3.]\n",
+    "    logits = [-1000., 2000., 2000.]\n",
+    "    probs = tf.exp(logits) / tf.reduce_sum(tf.exp(logits))\n",
+    "    \n",
+    "    # The previous one\n",
+    "    print('The previous one',sess.run(math_ops.reduce_sum(counts * math_ops.log(probs), -1)))\n",
+    "    \n",
+    "    # Minus cross entropy\n",
+    "    print('Minus Cross entropy', sess.run(-tf.nn.softmax_cross_entropy_with_logits(labels=counts, logits=logits)))\n",
+    "    \n",
+    "    # The current one\n",
+    "    logsumexp = math_ops.reduce_logsumexp(logits, -1, keep_dims=True)\n",
+    "    print('The current one',sess.run(math_ops.reduce_sum(counts * (logits - logsumexp), -1)))\n",
+    "    \n",
+    "    "
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {
+    "collapsed": true
+   },
+   "outputs": [],
+   "source": []
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 2",
+   "language": "python",
+   "name": "python2"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 2
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython2",
+   "version": "2.7.12"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 2
+}
