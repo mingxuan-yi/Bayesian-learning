@@ -1,1 +1,2 @@
-# Adversarial-Training
+# Bayesian-Learning
+Simple Bayesian models implemented with Edward
